@@ -14,8 +14,6 @@ instructions:
 - [Kermit](#kermit)
 - [Kitty](#kitty)
 - [PuTTY](#putty)
-- [QTerminal](#qterminal)
-- [st](#st)
 - [Rio](#rio)
 - [Termite](#termite)
 - [xfce4](#xfce4)
@@ -84,8 +82,8 @@ about it adding a Tinted Terminal theme to [Tinty].
    `~/.local/share/tinted-theming/tinty/tinted-terminal-alacritty-file.toml`
    where `tinted-terminal-alacritty-file.toml` is made up of
    `<NAME>-<THEMES_DIR>-file.<FILE_EXTENSION>`:
-      - `<NAME>` - The `name` property in `...tinty/config.toml`
-      - `<THEMES_DIR>` - The `themes-dir` property in `...tinty/config.toml`
+      - `<NAME>` - The `name` property in `...tiny/config.toml`
+      - `<THEMES_DIR>` - The `themes-dir` property in `...tiny/config.toml`
       - `<FILE_EXTENSION>` - The file extension of the theme file set by
         the template
 
@@ -344,40 +342,14 @@ theme = base16-ayu-dark
 > [!IMPORTANT]
 > You will need to trigger `reload_config` in Ghostty for the palette to apply. The default keybinding for this is `Cmd + Shift + ,` for macOS, or `Ctrl + Shift + ,` for Linux/Windows
 
-### macOS
 
-####  Auto `reload_config`
-
-You can use AppleScript to tell Ghostty to reload the config e.g.:
-
-```applescript
-if application "Ghostty" is running then
-   tell application "Ghostty" to activate
-   delay 0.25
-   tell application "System Events"
-      -- The keymap for `reload_config` in Ghostty. Change this if necessary:
-      keystroke "," using {shift down, command down}
-   end tell
-end if
-```
-
-Store this script somewhere on your machine, then after plugging in the correct keystroke to match the `reload_config` keymap for Ghostty (the above is the default), register a global hook in your Tinty config:
-
-```toml
-hooks = [
-   "osascript -se ~/path/to/ghostty-reload-config.scrpt"
-]
-```
-
-The next time you run `tinty apply`, Ghostty will prompt you for "App Management" permissions. Allow this to allow the hook to work going forward.
-
-####  Customize Ghostty's app icon
+### Customize Ghostty's app icon (macOS only)
 
 By default, the theme files assigns `Bright White` and `Bright Blue` for the icon's ghost tint and screen tint,
-respectively. If you'd like to use different colors, this repository provides scripts to generate a theme file with the
+respectively. If you'd like to use different colors, this repository provides scripts to generate a theme file with the 
 icon & screen tints you prefer. They are located in `./themes/ghostty-scripts` and can be used as follows:
 
-##### Manual
+#### Manual
 
 ```sh
 # Example:
@@ -390,7 +362,7 @@ sh /path/to/tinted-terminal/themes/ghostty-scripts/base16-ayu-dark.sh \
 The above example would generate a `base16-ayu-dark` theme with `macos-icon-ghost-color` set to `palette[5]` color, and
 `macos-icon-screen-color` set to a gradient of `palette[16]`, `palette[12]`, and `palette[10]`.
 
-##### Tinty
+#### Tinty
 
 Follow the same [Tinty instructions](#tinty-2), but put this in `~/.config/tinted-theming/tinty/config.toml` instead for
 Step 2:
@@ -426,11 +398,12 @@ There are two types of theme files for iTerm2:
 
 1. Standard themes which can be imported from iTerm2 itself,
    instructions below under "Manual".
-2. Applescripts that can be executed to change the iTerm2 theme.
+2. Script themes can be executed from a script to change the iTerm2
+   theme.
 
 **Theme directory**: [themes/iterm2/]
 
-**Applescripts directory**: [themes-16/iterm2-applescripts/]
+**Script Theme directory**: [themes-16/iterm2-scripts/]
 
 ### Tinty
 
@@ -440,33 +413,16 @@ There are two types of theme files for iTerm2:
    [[items]]
    path = "https://github.com/tinted-theming/tinted-terminal"
    name = "tinted-terminal"
-   themes-dir = "themes-16/iterm2-applescripts"
-   hook = '''
-   command cp -f %f ~/Library/Application\ Support/iTerm2/Scripts/AutoLaunch.scpt \
-     && osascript %f
-   '''
+   themes-dir = "themes-16/iterm2-scripts"
+   hook = "sh %f"
    supported-systems = ["base16", "base24"]
    ```
 
 2. `tinty apply base16-ayu-dark` to change the theme to
    `base16-ayu-dark`
 
-> [!NOTE]
->
-> This also adds an item under the `Scripts` menu-bar item that can be invoked to re-apply the theme.
-> You should be able to map a keyboard shortcut to trigger this as you like.
-
-> [!IMPORTANT]
->
-> The AutoLaunch script is only ran at iTerm2 startup. It will not run when opening new windows or tabs.
-> You may want to add the following line in your rc file:
-
-```sh
-# Only run if the shell is running in iTerm2.
-if [ "$TERM_PROGRAM" = "iTerm.app" ]; then
-    osascript "~/Library/Application Support/iTerm2/Scripts/AutoLaunch.scpt"
-fi
-```
+For more information on Tinty setup or usage, have a look at the [Tinty]
+GitHub page.
 
 ### Manual
 
@@ -515,7 +471,18 @@ curl https://raw.githubusercontent.com/tinted-theming/tinted-kermit-terminal/mai
 
 Tinted Theming template for [Kitty terminal emulator].
 
-Kitty will need to be restarted for changes to take effect. It is possible to remotely
+**Theme directory**: [themes/kitty/]
+
+| Operating System | Config Path                              |
+| ---------------- | ---------------------------------------- |
+| Linux            | `~/.config/kitty/kitty.conf`             |
+| MacOS            | `~/Library/Preferences/kitty/kitty.conf` |
+
+The following examples will use the Linux path, however if you're on
+MacOS, switch it out with the path above.
+
+Kitty will need to be restarted for changes to
+`~/.config/kitty/kitty.conf` to take effect. It is possible to remotely
 trigger a conf-reload, but this requires kitty be started with the
 feature `allow_remote_control=yes`.
 
@@ -532,35 +499,30 @@ kitty -o allow_remote_control=yes
    path = "https://github.com/tinted-theming/tinted-terminal"
    name = "tinted-terminal"
    themes-dir = "themes/kitty"
-   hook = "kitten @ load-config"
+   hook = "cp -f %f ~/.config/kitty/kitty.conf && kitten @ load-config ~/.config/kitty/kitty.conf"
    supported-systems = ["base16", "base24"]
    ```
 
 2. Add the following to `$HOME/.config/kitty/kitty.conf`:
 
    ```conf
-   include ~/.local/share/tinted-theming/tinty/tinted-terminal-themes-kitty-file.conf
+   include colors.conf
    ```
 
 3. `tinty apply base16-ayu-dark` to change the theme to
    `base16-ayu-dark`
 
 Note: If you don't have the Kitty feature `allow_remote_control`
-enabled, Kitty should be manually restarted after using `tinty apply` to
-set a new theme for it to take effect.
+enabled, the above Tinty `config.toml` hook value should be: `hook = "cp
+-f %f ~/.config/kitty/kitty.conf"` and Kitty should be manually
+restarted after using `tinty apply` to set a new theme for it to take
+affect.
 
 ### Manual
 
 Simply copy the contents of your desired color scheme into your kitty
 configuration (`kitty.conf`). If you already have a color scheme defined,
 remove it or comment it out before importing the new scheme.
-
-Alternatively, you can include the theme conf file directly in
-`$HOME/.config/kitty/kitty.conf`:
-
-```conf
-include /path/to/tinted-terminal/themes/kitty/base16-ayu-dark.conf
-```
 
 ## PuTTY
 
@@ -589,56 +551,6 @@ a single scheme system.
    `[HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\` **`{{SESSION_NAME}}`** `]`
    to the session you would like to apply the theme;
 6. Run the file and accept it to make changes in Windows Registry.
-
-## QTerminal
-
-Tinted Theming template for [QTerminal terminal emulator].
-
-**Theme directory**: [themes/qterminal/]
-
-### Tinty
-
-1. Make sure the following directory exists:
-
-   ```sh
-   mkdir -p ~/.local/share/qterminal/color-schemes
-   ```
-
-2. Add the following to `~/.config/tinted-theming/tinty/config.toml`:
-
-   ```toml
-   [[items]]
-   hook = "cp -f %f ~/.local/share/qterminal/color-schemes/tinty.colorscheme"
-   name = "tinted-terminal"
-   path = "https://github.com/tinted-theming/tinted-terminal"
-   supported-systems = ["base16", "base24"]
-   themes-dir = "themes/qterminal"
-   ```
-
-3. Run `tinty apply <theme-of-choice>` to change the theme.
-
-4. In a QTerminal window goto: File > Preferences... > Appearance, set Color
-   scheme to tinty, and then click the Apply button.
-
-5. Close and reopen QTerminal.
-
-### Manual
-
-1. Clone this repository to a location of your choice.
-
-2. Make sure the following directory exists:
-
-   ```sh
-   mkdir -p ~/.local/share/qterminal/color-schemes
-   ```
-
-3. Copy the desired theme from the `themes/qterminal` directory into the
-   directory created in the prior step.
-
-4. In a QTerminal window goto: File > Preferences... > Appearance, set Color
-   scheme to tinty, and then click the Apply button.
-
-5. Close and reopen QTerminal.
 
 ## Rio
 
@@ -686,28 +598,6 @@ Copy the contents of your desired theme into your
 `~/.config/rio/config.toml` configuration file. Make sure to remove or
 comment out any previous theme.
 
-## st
-
-<img src="./assets/st-icon.svg" alt="st icon" width="50"/>
-
-Tinted Theming template for [st terminal emulator].
-
-**Theme directory**: [themes/st/]
-
-### Manual
-
-Patch your local copy of the st terminal using the `patch` or `git apply` command.
-
-```bash
-# Example
-cd st-0.9.3
-patch -p1 < path/to/st-base16-default-dark-0.9.3.diff
-```
-
-### Tinty
-
-No support. As an alternative, use [xresources](https://st.suckless.org/patches/xresources/) patch in combination with [tinted-theming/tinted-xresources](https://github.com/tinted-theming/tinted-xresources).
-
 ## Termite
 
 Tinted Theming template for [Termite terminal emulator].
@@ -726,23 +616,6 @@ mkdir -p ~/.config/termite
 curl https://raw.githubusercontent.com/tinted-theming/tinted-terminal/main/termite/base16-default-dark.config >> ~/.config/termite/config
 ```
 
-## WezTerm
-
-<img src="./assets/wezterm-icon.svg" alt="WezTerm icon" width="50"/>
-
-Tinted Theming template for [WezTerm terminal emulator].
-
-**Theme directory**: [themes/wezterm/]
-
-### Manual
-
-1. Clone this repo locally
-2. ln -s `/path/to/tinted-terminal/themes/wezterm` `~/.config/wezterm/colors`
-3. Add the theme name to your `wezterm.lua` file:
-   ```
-    color_scheme = "base16-ayu-dark",
-   ```
-
 ## xfce4
 
 <img src="./assets/terminal-icon.svg" alt="Terminal icon" width="50"/>
@@ -753,24 +626,38 @@ Tinted Theming template for [xfce4 terminal emulator].
 
 ### Tinty
 
-1. Add the following to `~/.config/tinted-theming/tinty/config.toml`:
+1. Clone the tinted-terminal themes and symlink to Rio themes directory:
+
+   ```sh
+   git clone https://github.com/tinted-theming/tinted-terminal /path/to/tinted-terminal
+   mkdir -p ~/.local/share/xfce4/terminal
+   ln -s /path/to/tinted-terminal/xfce4 ~/.local/share/xfce4/terminal/colorschemes
+   ```
+
+2. Add the following to `~/.config/tinted-theming/tinty/config.toml`:
 
    ```toml
    [[items]]
-   path = "https://github.com/tinted-theming/tinted-terminal"
+   path = "~/projects/tinted-theming/tinted-xfce4-terminal"
    name = "tinted-xfce4-terminal"
    themes-dir = "themes/xfce4"
    hook = """
-   mkdir -p $XDG_CONFIG_HOME/xfce4/terminal/colorschemes
-   cat %f > $XDG_CONFIG_HOME/xfce4/terminal/colorschemes/%n.theme
+   # Adapted from https://askubuntu.com/questions/676428/change-color-scheme-for-xfce4-terminal-manually#answer-676452
+   if [[ -e $HOME/.local/share/xfce4/terminal/colorschemes/%n.theme ]]
+   then
+     cd $HOME/.config/xfce4/terminal
+     # strip settings from any themes
+     grep -Fxvf <(cat $HOME/.local/share/xfce4/terminal/colorschemes/*.theme) terminalrc > .terminalrc.tmp
+     grep -v -e Name -e Scheme "$HOME/.local/share/xfce4/terminal/colorschemes/%n.theme" >> .terminalrc.tmp
+     cp terminalrc terminalrc.bak
+     mv .terminalrc.tmp terminalrc
+   fi
    """
    supported-systems = ["base16", "base24"]
    ```
 
-2. `tinty sync && tinty apply base16-ayu-dark` to change the theme to
+3. `tinty apply base16-ayu-dark` to change the theme to
    `base16-ayu-dark`
-
-3. The theme will be available under `Preferences > Colors > Presets`.
 
 For more information on Tinty setup or usage, have a look at the [Tinty]
 GitHub page.
@@ -779,7 +666,8 @@ GitHub page.
 
 Put the prebuilt `*.theme` files from `colorschemes/` into
 `~/.local/share/xfce4/terminal/colorschemes/` (create this directory if
-it does not exist), and the themes will be available under `Preferences > Colors > Presets`.
+it does not exist), and the themes will be available under `Edit >
+Preferences... > Colors > Presets`
 
 ```sh
 mkdir -p ~/.local/share/xfce4/terminal
@@ -827,9 +715,7 @@ terminal template decisions.
 [themes-16/kermit/]: ./themes-16/kermit/
 [themes/kitty/]: ./themes/kitty/
 [themes/putty/]: ./themes/putty/
-[themes/qterminal/]: ./themes/qterminal/
 [themes-16/rio/]: ./themes-16/rio/
-[themes/st/]: ./themes/st/
 [themes/termite/]: ./themes/termite/
 [themes/xfce4/]: ./themes/xfce4/
 
@@ -840,12 +726,9 @@ terminal template decisions.
 [Kermit terminal emulator]: https://github.com/orhun/kermit
 [Kitty terminal emulator]: https://github.com/kovidgoyal/kitty
 [PuTTY terminal emulator]: https://www.putty.org/
-[QTerminal terminal emulator]: https://github.com/lxqt/qterminal
 [Rio terminal emulator]: https://github.com/raphamorim/rio
-[st terminal emulator]: https://st.suckless.org/
 [Termite terminal emulator]: https://github.com/thestinger/termite
 [iTerm2 terminal emulator]: https://github.com/gnachman/iTerm2
-[WezTerm terminal emulator]: https://wezterm.org/index.html
 [xfce4 terminal emulator]: https://docs.xfce.org/apps/terminal/start
 
 [color options]: assets/ConEmu_Color_Options.png

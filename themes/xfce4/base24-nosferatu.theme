@@ -1,0 +1,10 @@
+# Scheme name: nosferatu
+# Scheme author: morgan
+# Template author: Tinted Theming (https://github.com/tinted-theming/tinted-xfce-terminal)
+[Scheme]
+Name=base24-nosferatu
+ColorForeground=#f8f8f2
+ColorBackground=#282a36
+ColorCursor=x
+ColorBoldIsBright=FALSE
+ColorPalette=#363447;#ff5555;#50fa7b;#f1fa8c;#bd93f9;#ff79c6;#8be9fd;#f8f8f2;#44475a;#ff6e6e;#69ff94;#ffffa5;#d6acff;#ff92df;#a4ffff;#ffffff
